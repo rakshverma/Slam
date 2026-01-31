@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding SLAM: A Visual Journey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.8;
+            color: #2c3e50;
+            background: #f5f5f5;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 50px 60px;
+            border-bottom: 4px solid #34495e;
+        }
+
+        h1 {
+            font-size: 2.4em;
+            margin-bottom: 12px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 1.15em;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .content {
+            padding: 50px 60px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            margin: 30px 0;
+            border: 1px solid #ddd;
+            background: #000;
+        }
+
+        video {
+            width: 100%;
+            display: block;
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 1.9em;
+            margin: 50px 0 25px 0;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: 600;
+        }
+
+        h3 {
+            color: #34495e;
+            font-size: 1.35em;
+            margin: 30px 0 15px 0;
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 16px;
+            font-size: 1.05em;
+            text-align: justify;
+        }
+
+        .component {
+            background: #fafafa;
+            padding: 25px 30px;
+            margin: 25px 0;
+            border-left: 4px solid #34495e;
+        }
+
+        .component-title {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.15em;
+            margin-bottom: 12px;
+        }
+
+        .color-box {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            vertical-align: middle;
+            border: 1px solid #666;
+        }
+
+        .visual-guide {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .visual-item {
+            background: #fafafa;
+            padding: 22px;
+            border: 1px solid #ddd;
+        }
+
+        .visual-item h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+
+        code {
+            background: #f4f4f4;
+            color: #2c3e50;
+            padding: 3px 7px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.92em;
+            border: 1px solid #e0e0e0;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #5a6c7d;
+            padding: 22px 25px;
+            margin: 25px 0;
+        }
+
+        .info-box strong {
+            color: #2c3e50;
+        }
+
+        footer {
+            background: #34495e;
+            color: white;
+            padding: 35px;
+            text-align: center;
+            font-size: 0.95em;
+            border-top: 4px solid #2c3e50;
+        }
+
+        .equation {
+            background: #f8f9fa;
+            padding: 18px;
+            margin: 25px 0;
+            border: 1px solid #e0e0e0;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            font-size: 1.08em;
+        }
+
+        ul, ol {
+            line-height: 1.9;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 30px 25px;
+            }
+            
+            header {
+                padding: 35px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Understanding SLAM</h1>
+            <p class="subtitle">Simultaneous Localization and Mapping in 2D</p>
+        </header>
+
+        <div class="content">
+            <section>
+                <h2>What Are We Looking At?</h2>
+                <p>
+                    This simulation demonstrates a robot exploring an unknown environment while simultaneously 
+                    determining its position and mapping its surroundings. This represents one of the fundamental 
+                    challenges in robotics and autonomous systems.
+                </p>
+
+                <div class="video-container">
+                    <video controls loop>
+                        <source src="main.mp4" type="video/mp4">
+                        Your browser doesn't support video playback.
+                    </video>
+                </div>
+
+                <div class="info-box">
+                    <strong>Note:</strong> SLAM technology enables robots such as autonomous vacuum cleaners, 
+                    drones, and self-driving vehicles to navigate without pre-existing maps. The system must 
+                    solve the interdependent problem of localization and mapping simultaneously.
+                </div>
+            </section>
+
+            <section>
+                <h2>Breaking Down What You See</h2>
+                
+                <div class="visual-guide">
+                    <div class="visual-item">
+                        <h4><span class="color-box" style="background: rgb(80, 140, 255);"></span>Blue Robot</h4>
+                        <p>The robot's belief about its position. This represents the estimated state.</p>
+                    </div>
+                    
+                    <div class="visual-item">
+                        <h4><span class="color-box" style="background: rgb(240, 240, 240);"></span>White Robot</h4>
+                        <p>The true position of the robot (displayed in the mini-map)</p>
+                    </div>
+                    
+                    <div class="visual-item">
+                        <h4><span class="color-box" style="background: rgb(120, 220, 120);"></span>Green Circles</h4>
+                        <p>Landmarks discovered and mapped by the robot</p>
+                    </div>
+                    
+                    <div class="visual-item">
+                        <h4><span class="color-box" style="background: rgb(255, 90, 90);"></span>Red Circles</h4>
+                        <p>The actual landmark positions in the environment</p>
+                    </div>
+                    
+                    <div class="visual-item">
+                        <h4><span class="color-box" style="background: rgb(255, 255, 120);"></span>Yellow Lines</h4>
+                        <p>Sensor rays indicating active landmark detection</p>
+                    </div>
+                    
+                    <div class="visual-item">
+                        <h4><span class="color-box" style="background: rgb(80, 140, 255); opacity: 0.5;"></span>Blue Trail</h4>
+                        <p>The estimated trajectory of the robot over time</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2>The Components Explained</h2>
+
+                <div class="component">
+                    <div class="component-title">The Main View (Left Side)</div>
+                    <p>
+                        This displays the robot's belief state. The blue robot continuously updates its position 
+                        estimate based on motion commands and sensor observations. The blue trail illustrates 
+                        the estimated trajectory with temporal fading, where older positions appear darker.
+                    </p>
+                    <p>
+                        The green circles represent landmarks that have been detected and incorporated into 
+                        the map. Each sensor measurement (indicated by yellow lines) triggers an update to 
+                        the map estimation.
+                    </p>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">The Mini-Map (Bottom Right)</div>
+                    <p>
+                        This section provides ground truth data for comparison. The red circles indicate 
+                        actual landmark positions, while the white robot shows the true position and orientation.
+                    </p>
+                    <p>
+                        The discrepancy between the white robot (ground truth) and blue robot (estimate) 
+                        demonstrates the accumulation of estimation error over time.
+                    </p>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">The Sensor System</div>
+                    <p>
+                        The yellow rays represent active sensor measurements. The robot's range sensor has 
+                        a maximum detection distance of 130 units (defined by <code>r < 130</code>).
+                    </p>
+                    <p>
+                        For each detected landmark, the sensor provides two measurements:
+                    </p>
+                    <ul style="margin-left: 30px; margin-top: 10px;">
+                        <li><strong>Range</strong> - Euclidean distance to the landmark</li>
+                        <li><strong>Bearing</strong> - Angular offset relative to the robot's heading</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h2>The Robot's Motion</h2>
+                
+                <p>
+                    The robot executes a spiral trajectory pattern through the following motion parameters:
+                </p>
+
+                <div class="component">
+                    <div class="component-title">Movement Parameters</div>
+                    <p>
+                        <strong>Linear velocity (v):</strong> <code>2.2</code> units per time step
+                    </p>
+                    <p>
+                        <strong>Angular velocity (w):</strong> <code>0.045</code> radians per time step
+                    </p>
+                    <p>
+                        This combination of constant forward motion and incremental rotation produces 
+                        the observed spiral exploration pattern, enabling efficient coverage of the environment.
+                    </p>
+                </div>
+            </section>
+
+            <section>
+                <h2>Dealing with Uncertainty: Noise</h2>
+                
+                <p>
+                    Real-world robotic systems must contend with two primary sources of uncertainty:
+                </p>
+
+                <div class="component">
+                    <div class="component-title">Motion Noise</div>
+                    <p>
+                        The robot's motion model includes stochastic perturbations. Commanded movements 
+                        are subject to random variations in both translation and rotation.
+                    </p>
+                    <div class="equation">
+                        Motion Noise Covariance: σ<sub>x</sub> = 0.02, σ<sub>y</sub> = 0.02, σ<sub>θ</sub> = 0.01
+                    </div>
+                    <p>
+                        This motion uncertainty causes the estimated position (blue robot) to gradually 
+                        diverge from the true position (white robot) over time.
+                    </p>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">Measurement Noise</div>
+                    <p>
+                        Sensor measurements are corrupted by Gaussian noise, affecting both range and 
+                        bearing observations:
+                    </p>
+                    <div class="equation">
+                        Measurement Noise Covariance: σ<sub>range</sub> = 0.5, σ<sub>bearing</sub> = 0.1
+                    </div>
+                    <p>
+                        Consequently, estimated landmark positions (green circles) do not precisely 
+                        coincide with their true locations (red circles).
+                    </p>
+                </div>
+            </section>
+
+            <section>
+                <h2>How the Robot Builds Its Map</h2>
+
+                <h3>Step 1: Motion Prediction</h3>
+                <p>
+                    Based on the motion command, the robot propagates its state estimate forward using 
+                    the motion model, incorporating the known linear and angular velocities.
+                </p>
+
+                <h3>Step 2: Sensor Observation</h3>
+                <p>
+                    The robot performs range-bearing measurements to detect landmarks within the sensor's 
+                    effective range, indicated by the yellow sensor rays.
+                </p>
+
+                <h3>Step 3: Map Update</h3>
+                <p>
+                    Upon first detection, a landmark is initialized in the map. For subsequent observations 
+                    of known landmarks, the estimate is refined using an exponential moving average filter:
+                </p>
+                <div class="equation">
+                    New Estimate = 0.85 × Previous Estimate + 0.15 × Current Measurement
+                </div>
+                <p>
+                    This weighted averaging scheme (α = 0.15) provides temporal smoothing to mitigate 
+                    measurement noise while allowing the estimate to adapt to new information.
+                </p>
+
+                <h3>Step 4: State Recording</h3>
+                <p>
+                    The current position estimate is appended to the trajectory history, creating the 
+                    visible trail. This process iterates for 220 time steps at 20 frames per second.
+                </p>
+            </section>
+
+            <section>
+                <h2>The Magic Formula</h2>
+                
+                <p>
+                    When a landmark is detected, its position must be transformed from the sensor's 
+                    local coordinate frame to the global map coordinates:
+                </p>
+
+                <div class="component">
+                    <div class="component-title">Coordinate Transformation</div>
+                    <div class="equation">
+                        landmark<sub>x</sub> = robot<sub>x</sub> + range × cos(bearing + robot<sub>heading</sub>)
+                        <br>
+                        landmark<sub>y</sub> = robot<sub>y</sub> + range × sin(bearing + robot<sub>heading</sub>)
+                    </div>
+                    <p>
+                        This transformation converts polar sensor measurements (range, bearing) into 
+                        Cartesian world coordinates, accounting for the robot's current pose (position 
+                        and orientation).
+                    </p>
+                </div>
+            </section>
+
+            <section>
+                <h2>Key Observations</h2>
+
+                <div class="component">
+                    <div class="component-title">Odometry Drift</div>
+                    <p>
+                        The blue (estimated) and white (true) robots begin at the same position but diverge 
+                        over time. This phenomenon, known as odometry drift, results from the accumulation 
+                        of motion noise over successive time steps.
+                    </p>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">Landmark Discovery</div>
+                    <p>
+                        Green circles appear progressively as the robot's exploration trajectory brings 
+                        landmarks within sensor range. The completeness of the map increases monotonically 
+                        with exploration time.
+                    </p>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">Sensor Range Limitation</div>
+                    <p>
+                        Yellow sensor rays appear only when landmarks are within the 130-unit detection 
+                        threshold. This range limitation necessitates active exploration to achieve 
+                        comprehensive environmental mapping.
+                    </p>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">Trajectory Visualization</div>
+                    <p>
+                        The blue trail employs temporal transparency gradients, with opacity increasing 
+                        for older positions. This visualization technique provides an intuitive representation 
+                        of the robot's motion history.
+                    </p>
+                </div>
+            </section>
+
+            <section>
+                <h2>Applications</h2>
+                
+                <p>
+                    SLAM algorithms are fundamental to numerous autonomous robotic systems:
+                </p>
+
+                <ul style="margin-left: 30px; margin-top: 15px; line-height: 2;">
+                    <li><strong>Autonomous Vacuum Cleaners</strong> - Spatial mapping and coverage path planning</li>
+                    <li><strong>Autonomous Vehicles</strong> - Real-time localization and environmental perception</li>
+                    <li><strong>Unmanned Aerial Vehicles</strong> - 3D reconstruction and navigation</li>
+                    <li><strong>Warehouse Automation</strong> - Dynamic obstacle avoidance and path planning</li>
+                    <li><strong>Planetary Rovers</strong> - Exploration in GNSS-denied environments</li>
+                </ul>
+
+                <div class="info-box">
+                    <strong>Technical Challenge:</strong> SLAM addresses the circular dependency problem 
+                    wherein accurate localization requires a map, yet map construction requires accurate 
+                    localization. The algorithm resolves this through probabilistic state estimation and 
+                    iterative refinement.
+                </div>
+            </section>
+
+            <section>
+                <h2>Technical Specifications</h2>
+
+                <div class="component">
+                    <div class="component-title">Simulation Parameters</div>
+                    <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                        <li><strong>Environment Dimensions:</strong> 400 × 400 units</li>
+                        <li><strong>Landmark Count:</strong> 10 (uniformly distributed)</li>
+                        <li><strong>Time Steps:</strong> 220 iterations</li>
+                        <li><strong>Frame Rate:</strong> 20 FPS</li>
+                        <li><strong>Initial Pose:</strong> (200, 200, 0) - center position, zero heading</li>
+                        <li><strong>Sensor Range:</strong> 130 units (Euclidean distance)</li>
+                    </ul>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">Visualization Design</div>
+                    <p>
+                        The visualization employs a dark background (<code>RGB(18, 18, 22)</code>) to 
+                        maximize color contrast. The mini-map includes a 50-unit grid overlay to facilitate 
+                        spatial reference and distance estimation.
+                    </p>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">Angle Normalization</div>
+                    <p>
+                        The <code>wrap()</code> function normalizes angular values to the interval [-π, π] 
+                        radians. This normalization is essential for correct handling of angular arithmetic, 
+                        particularly for bearing calculations where angular discontinuity at ±180° must be 
+                        properly managed.
+                    </p>
+                </div>
+            </section>
+
+            <section>
+                <h2>Analysis Questions</h2>
+                
+                <p>
+                    When examining the simulation, consider the following analytical questions:
+                </p>
+
+                <ol style="margin-left: 30px; margin-top: 15px; line-height: 2;">
+                    <li>How many complete spiral revolutions does the robot trajectory complete?</li>
+                    <li>What percentage of the 10 landmarks are discovered within the sensor range?</li>
+                    <li>How does the estimation error (distance between blue and white robots) evolve over time?</li>
+                    <li>Which spatial regions of the environment are explored first?</li>
+                    <li>How does landmark re-observation affect the map estimate quality?</li>
+                </ol>
+
+                <div class="info-box">
+                    <strong>Further Considerations:</strong> How would reducing the sensor range affect 
+                    map completeness? What impact would increased noise covariance have on estimation 
+                    accuracy? How might the exploration strategy be optimized for faster coverage?
+                </div>
+            </section>
+
+            <section>
+                <h2>Implementation Details</h2>
+                
+                <p>
+                    The simulation is implemented in Python using Pygame for visualization and NumPy 
+                    for numerical computations. Below is a detailed breakdown of the implementation.
+                </p>
+
+                <h3>Part 1: Configuration and Initialization</h3>
+                
+                <div class="component">
+                    <div class="component-title">Display and Environment Parameters</div>
+                    <pre style="background: #f4f4f4; padding: 15px; border-left: 4px solid #34495e; overflow-x: auto; font-size: 0.9em;"><code>WIDTH, HEIGHT = 960, 640    # Display window dimensions
+MAP_SIZE = 400              # Environment size (400×400 units)
+FPS = 20                    # Animation frame rate
+STEPS = 220                 # Total simulation iterations</code></pre>
+                    <p>
+                        These constants define the visualization window size and simulation parameters. 
+                        The map size determines the navigable environment bounds.
+                    </p>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">Noise Covariance Matrices</div>
+                    <pre style="background: #f4f4f4; padding: 15px; border-left: 4px solid #34495e; overflow-x: auto; font-size: 0.9em;"><code>MOTION_NOISE = np.diag([0.02, 0.02, 0.01])
+MEAS_NOISE   = np.diag([0.5, 0.1])</code></pre>
+                    <p>
+                        <code>MOTION_NOISE</code> is a 3×3 diagonal covariance matrix representing 
+                        uncertainty in x-position, y-position, and heading angle respectively.
+                        <code>MEAS_NOISE</code> is a 2×2 diagonal covariance matrix for range and 
+                        bearing measurements.
+                    </p>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">Color Definitions</div>
+                    <pre style="background: #f4f4f4; padding: 15px; border-left: 4px solid #34495e; overflow-x: auto; font-size: 0.9em;"><code>BG_COLOR = (18, 18, 22)         # Dark background
+BELIEF_COLOR = (80, 140, 255)   # Estimated robot (blue)
+TRUE_COLOR = (240, 240, 240)    # True robot (white)
+LANDMARK_EST = (120, 220, 120)  # Estimated landmarks (green)
+LANDMARK_TRUE = (255, 90, 90)   # True landmarks (red)
+RAY_COLOR = (255, 255, 120)     # Sensor rays (yellow)</code></pre>
+                    <p>
+                        RGB tuples defining the color scheme for different visualization elements.
+                    </p>
+                </div>
+
+                <h3>Part 2: Utility Functions</h3>
+
+                <div class="component">
+                    <div class="component-title">Angle Normalization</div>
+                    <pre style="background: #f4f4f4; padding: 15px; border-left: 4px solid #34495e; overflow-x: auto; font-size: 0.9em;"><code>def wrap(a):
+    return (a + math.pi) % (2 * math.pi) - math.pi</code></pre>
+                    <p>
+                        This function normalizes any angle to the range [-π, π]. The operation 
+                        <code>(a + π) % (2π) - π</code> ensures angular continuity by wrapping 
+                        values outside this range back into the standard interval.
+                    </p>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">Arrow Rendering</div>
+                    <pre style="background: #f4f4f4; padding: 15px; border-left: 4px solid #34495e; overflow-x: auto; font-size: 0.9em;"><code>def draw_arrow(surf, pos, theta, color, scale=12):
+    x, y = pos
+    tip = (x + scale * math.cos(theta),
+           y + scale * math.sin(theta))
+    left = (x + scale * 0.6 * math.cos(theta + 2.5),
+            y + scale * 0.6 * math.sin(theta + 2.5))
+    right = (x + scale * 0.6 * math.cos(theta - 2.5),
+             y + scale * 0.6 * math.sin(theta - 2.5))
+    pygame.draw.polygon(surf, color, [tip, left, right])</code></pre>
+                    <p>
+                        Draws a directional arrow to visualize robot heading. The arrow tip points 
+                        in direction <code>theta</code>, with two base vertices offset by ±2.5 radians 
+                        to form a triangular shape.
+                    </p>
+                </div>
+
+                <h3>Part 3: Environment Setup</h3>
+
+                <div class="component">
+                    <div class="component-title">Landmark Generation</div>
+                    <pre style="background: #f4f4f4; padding: 15px; border-left: 4px solid #34495e; overflow-x: auto; font-size: 0.9em;"><code>np.random.seed(4)
+landmarks = np.random.uniform(40, MAP_SIZE-40, size=(10, 2))
+true_pose = np.array([200.0, 200.0, 0.0])</code></pre>
+                    <p>
+                        A fixed random seed ensures reproducible landmark placement. Ten landmarks 
+                        are uniformly distributed within the bounds [40, 360] to maintain margin from 
+                        environment edges. The true pose vector contains [x, y, θ].
+                    </p>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">Robot State Initialization</div>
+                    <pre style="background: #f4f4f4; padding: 15px; border-left: 4px solid #34495e; overflow-x: auto; font-size: 0.9em;"><code>mu = true_pose.copy()
+traj_est, traj_true = [], []
+est_landmarks = {}</code></pre>
+                    <p>
+                        <code>mu</code> represents the robot's belief state (estimated pose). 
+                        <code>traj_est</code> and <code>traj_true</code> store trajectory histories. 
+                        <code>est_landmarks</code> is a dictionary mapping landmark IDs to estimated positions.
+                    </p>
+                </div>
+
+                <h3>Part 4: Main Simulation Loop</h3>
+
+                <div class="component">
+                    <div class="component-title">Motion Model (Ground Truth)</div>
+                    <pre style="background: #f4f4f4; padding: 15px; border-left: 4px solid #34495e; overflow-x: auto; font-size: 0.9em;"><code>v, w = 2.2, 0.045
+true_pose[2] += w
+true_pose[0] += v * math.cos(true_pose[2])
+true_pose[1] += v * math.sin(true_pose[2])
+true_pose[:2] = np.clip(true_pose[:2], 20, MAP_SIZE-20)</code></pre>
+                    <p>
+                        The true robot motion follows a constant velocity model with linear velocity 
+                        <code>v</code> and angular velocity <code>w</code>. The heading updates first, 
+                        then position increments using standard kinematic equations. Clipping prevents 
+                        boundary violations.
+                    </p>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">Motion Model (Estimated with Noise)</div>
+                    <pre style="background: #f4f4f4; padding: 15px; border-left: 4px solid #34495e; overflow-x: auto; font-size: 0.9em;"><code>noise = np.random.multivariate_normal([0,0,0], MOTION_NOISE)
+mu[2] = wrap(mu[2] + w + noise[2])
+mu[0] += v * math.cos(mu[2]) + noise[0]
+mu[1] += v * math.sin(mu[2]) + noise[1]</code></pre>
+                    <p>
+                        The estimated state propagates using the same motion commands but includes 
+                        additive Gaussian noise sampled from the motion covariance matrix. Angular 
+                        noise is added to the heading, while translational noise perturbs x and y coordinates.
+                    </p>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">Sensor Simulation and Measurement Processing</div>
+                    <pre style="background: #f4f4f4; padding: 15px; border-left: 4px solid #34495e; overflow-x: auto; font-size: 0.9em;"><code>for i, lm in enumerate(landmarks):
+    dx, dy = lm - true_pose[:2]
+    r = np.hypot(dx, dy)
+    if r < 130:
+        bearing = wrap(math.atan2(dy, dx) - true_pose[2])
+        z = np.array([r, bearing]) + np.random.multivariate_normal([0,0], MEAS_NOISE)
+        
+        lx = mu[0] + z[0] * math.cos(z[1] + mu[2])
+        ly = mu[1] + z[0] * math.sin(z[1] + mu[2])
+        hit = np.array([lx, ly])
+        sensor_hits.append(hit)
+        
+        if i not in est_landmarks:
+            est_landmarks[i] = hit
+        else:
+            est_landmarks[i] = 0.85 * est_landmarks[i] + 0.15 * hit</code></pre>
+                    <p>
+                        For each landmark: (1) Compute range <code>r</code> and bearing from true pose, 
+                        (2) If within sensor range, generate noisy measurement <code>z</code>, 
+                        (3) Transform measurement to global coordinates using current belief state, 
+                        (4) Initialize new landmarks or update existing ones using exponential moving average 
+                        with α = 0.15.
+                    </p>
+                </div>
+
+                <h3>Part 5: Visualization System</h3>
+
+                <div class="component">
+                    <div class="component-title">Rendering Pipeline</div>
+                    <pre style="background: #f4f4f4; padding: 15px; border-left: 4px solid #34495e; overflow-x: auto; font-size: 0.9em;"><code>def draw_scene(sensor_hits):
+    screen.fill(BG_COLOR)
+    
+    # Trajectory with temporal fading
+    for i, p in enumerate(traj_est):
+        alpha = int(40 + 200 * i / len(traj_est))
+        surf = pygame.Surface((4,4), pygame.SRCALPHA)
+        surf.fill((*BELIEF_COLOR, alpha))
+        screen.blit(surf, (p[0]-2, p[1]-2))
+    
+    # Sensor rays
+    for hit in sensor_hits:
+        pygame.draw.line(screen, RAY_COLOR,
+                         mu[:2].astype(int), hit.astype(int), 1)
+    
+    # Estimated landmarks
+    for lm in est_landmarks.values():
+        pygame.draw.circle(screen, LANDMARK_EST, lm.astype(int), 6, 2)
+    
+    # Estimated robot
+    pygame.draw.circle(screen, BELIEF_COLOR, mu[:2].astype(int), 7)
+    draw_arrow(screen, mu[:2], mu[2], BELIEF_COLOR)</code></pre>
+                    <p>
+                        The rendering function draws: (1) Fading trajectory with opacity proportional to 
+                        temporal position, (2) Active sensor rays, (3) Estimated landmark positions, 
+                        (4) Current robot belief state with directional arrow.
+                    </p>
+                </div>
+
+                <div class="component">
+                    <div class="component-title">Mini-Map Visualization</div>
+                    <pre style="background: #f4f4f4; padding: 15px; border-left: 4px solid #34495e; overflow-x: auto; font-size: 0.9em;"><code>    # Mini-map offset
+    ox, oy = WIDTH - MAP_SIZE - 20, 20
+    
+    # Draw grid
+    for g in range(0, MAP_SIZE, 50):
+        pygame.draw.line(screen, (60,60,60), (ox+g, oy), (ox+g, oy+MAP_SIZE))
+        pygame.draw.line(screen, (60,60,60), (ox, oy+g), (ox+MAP_SIZE, oy+g))
+    
+    # True landmarks
+    for lm in landmarks:
+        pygame.draw.circle(screen, LANDMARK_TRUE, (ox+int(lm[0]), oy+int(lm[1])), 4)
+    
+    # True trajectory
+    for p in traj_true:
+        pygame.draw.circle(screen, TRUE_COLOR, (ox+int(p[0]), oy+int(p[1])), 2)
+    
+    # True robot pose
+    pygame.draw.circle(screen, TRUE_COLOR,
+                       (ox+int(true_pose[0]), oy+int(true_pose[1])), 6)
+    draw_arrow(screen, (ox+true_pose[0], oy+true_pose[1]),
+               true_pose[2], TRUE_COLOR)</code></pre>
+                    <p>
+                        The mini-map provides ground truth visualization in the bottom-right corner. 
+                        Coordinates are offset by <code>(ox, oy)</code> to position the map correctly. 
+                        A 50-unit grid aids spatial reference.
+                    </p>
+                </div>
+
+                <h3>Part 6: Video Export</h3>
+
+                <div class="component">
+                    <div class="component-title">Frame Capture and Video Generation</div>
+                    <pre style="background: #f4f4f4; padding: 15px; border-left: 4px solid #34495e; overflow-x: auto; font-size: 0.9em;"><code>    frame = pygame.surfarray.array3d(screen)
+    frames.append(np.transpose(frame, (1,0,2)))
+
+# After simulation loop
+clip = mpy.ImageSequenceClip(frames, fps=FPS)
+clip.write_videofile("slam_2d_exploration_pretty.mp4", codec="libx264")</code></pre>
+                    <p>
+                        Each frame is captured as a NumPy array using <code>surfarray.array3d()</code>, 
+                        then transposed to correct axis ordering for MoviePy. The accumulated frames 
+                        are encoded to MP4 format using the H.264 codec.
+                    </p>
+                </div>
+
+                <h3>Complete Implementation</h3>
+
+                <div class="component">
+                    <div class="component-title">Full Source Code</div>
+                    <pre style="background: #f4f4f4; padding: 20px; border-left: 4px solid #34495e; overflow-x: auto; font-size: 0.85em; line-height: 1.6;"><code>import pygame
+import numpy as np
+import math
+import moviepy.editor as mpy
+
+# =========================
+# CONFIG
+# =========================
+WIDTH, HEIGHT = 960, 640
+MAP_SIZE = 400
+FPS = 20
+STEPS = 220
+
+MOTION_NOISE = np.diag([0.02, 0.02, 0.01])
+MEAS_NOISE   = np.diag([0.5, 0.1])
+
+BG_COLOR = (18, 18, 22)
+BELIEF_COLOR = (80, 140, 255)
+TRUE_COLOR = (240, 240, 240)
+LANDMARK_EST = (120, 220, 120)
+LANDMARK_TRUE = (255, 90, 90)
+RAY_COLOR = (255, 255, 120)
+
+# =========================
+def wrap(a):
+    return (a + math.pi) % (2 * math.pi) - math.pi
+
+def draw_arrow(surf, pos, theta, color, scale=12):
+    x, y = pos
+    tip = (x + scale * math.cos(theta),
+           y + scale * math.sin(theta))
+    left = (x + scale * 0.6 * math.cos(theta + 2.5),
+            y + scale * 0.6 * math.sin(theta + 2.5))
+    right = (x + scale * 0.6 * math.cos(theta - 2.5),
+             y + scale * 0.6 * math.sin(theta - 2.5))
+    pygame.draw.polygon(surf, color, [tip, left, right])
+
+# =========================
+# ENVIRONMENT (HIDDEN)
+# =========================
+np.random.seed(4)
+landmarks = np.random.uniform(40, MAP_SIZE-40, size=(10, 2))
+true_pose = np.array([200.0, 200.0, 0.0])
+
+# =========================
+# ROBOT BELIEF
+# =========================
+mu = true_pose.copy()
+traj_est, traj_true = [], []
+est_landmarks = {}
+
+# =========================
+# PYGAME INIT
+# =========================
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+clock = pygame.time.Clock()
+frames = []
+
+# =========================
+def draw_scene(sensor_hits):
+    screen.fill(BG_COLOR)
+
+    # --- TRAJECTORY (fade) ---
+    for i, p in enumerate(traj_est):
+        alpha = int(40 + 200 * i / len(traj_est))
+        surf = pygame.Surface((4,4), pygame.SRCALPHA)
+        surf.fill((*BELIEF_COLOR, alpha))
+        screen.blit(surf, (p[0]-2, p[1]-2))
+
+    # --- SENSOR RAYS ---
+    for hit in sensor_hits:
+        pygame.draw.line(screen, RAY_COLOR,
+                         mu[:2].astype(int), hit.astype(int), 1)
+
+    # --- ESTIMATED LANDMARKS ---
+    for lm in est_landmarks.values():
+        pygame.draw.circle(screen, LANDMARK_EST, lm.astype(int), 6, 2)
+
+    # --- ROBOT BELIEF ---
+    pygame.draw.circle(screen, BELIEF_COLOR, mu[:2].astype(int), 7)
+    draw_arrow(screen, mu[:2], mu[2], BELIEF_COLOR)
+
+    # --- MINI MAP ---
+    ox, oy = WIDTH - MAP_SIZE - 20, 20
+    pygame.draw.rect(screen, (40,40,50), (ox-3, oy-3, MAP_SIZE+6, MAP_SIZE+6), border_radius=8)
+    pygame.draw.rect(screen, (20,20,30), (ox, oy, MAP_SIZE, MAP_SIZE))
+
+    # grid
+    for g in range(0, MAP_SIZE, 50):
+        pygame.draw.line(screen, (60,60,60), (ox+g, oy), (ox+g, oy+MAP_SIZE))
+        pygame.draw.line(screen, (60,60,60), (ox, oy+g), (ox+MAP_SIZE, oy+g))
+
+    for lm in landmarks:
+        pygame.draw.circle(screen, LANDMARK_TRUE, (ox+int(lm[0]), oy+int(lm[1])), 4)
+
+    for p in traj_true:
+        pygame.draw.circle(screen, TRUE_COLOR, (ox+int(p[0]), oy+int(p[1])), 2)
+
+    pygame.draw.circle(screen, TRUE_COLOR,
+                       (ox+int(true_pose[0]), oy+int(true_pose[1])), 6)
+    draw_arrow(screen,
+               (ox+true_pose[0], oy+true_pose[1]),
+               true_pose[2], TRUE_COLOR)
+
+    pygame.display.flip()
+
+# =========================
+# MAIN LOOP
+# =========================
+for step in range(STEPS):
+    pygame.event.pump()
+
+    # --- TRUE MOTION ---
+    v, w = 2.2, 0.045
+    true_pose[2] += w
+    true_pose[0] += v * math.cos(true_pose[2])
+    true_pose[1] += v * math.sin(true_pose[2])
+    true_pose[:2] = np.clip(true_pose[:2], 20, MAP_SIZE-20)
+
+    # --- BELIEF MOTION ---
+    noise = np.random.multivariate_normal([0,0,0], MOTION_NOISE)
+    mu[2] = wrap(mu[2] + w + noise[2])
+    mu[0] += v * math.cos(mu[2]) + noise[0]
+    mu[1] += v * math.sin(mu[2]) + noise[1]
+
+    sensor_hits = []
+
+    # --- MEASUREMENTS ---
+    for i, lm in enumerate(landmarks):
+        dx, dy = lm - true_pose[:2]
+        r = np.hypot(dx, dy)
+        if r < 130:
+            bearing = wrap(math.atan2(dy, dx) - true_pose[2])
+            z = np.array([r, bearing]) + np.random.multivariate_normal([0,0], MEAS_NOISE)
+
+            lx = mu[0] + z[0] * math.cos(z[1] + mu[2])
+            ly = mu[1] + z[0] * math.sin(z[1] + mu[2])
+            hit = np.array([lx, ly])
+            sensor_hits.append(hit)
+
+            if i not in est_landmarks:
+                est_landmarks[i] = hit
+            else:
+                est_landmarks[i] = 0.85 * est_landmarks[i] + 0.15 * hit
+
+    traj_est.append(mu[:2].copy())
+    traj_true.append(true_pose[:2].copy())
+
+    draw_scene(sensor_hits)
+
+    frame = pygame.surfarray.array3d(screen)
+    frames.append(np.transpose(frame, (1,0,2)))
+
+    clock.tick(FPS)
+
+pygame.quit()
+
+# =========================
+# SAVE VIDEO
+# =========================
+clip = mpy.ImageSequenceClip(frames, fps=FPS)
+clip.write_videofile("slam_2d_exploration_pretty.mp4", codec="libx264")</code></pre>
+                    <p>
+                        This complete implementation demonstrates a basic SLAM system with motion prediction, 
+                        sensor measurement, and incremental map construction. The visualization provides 
+                        real-time comparison between estimated and true states.
+                    </p>
+                </div>
+
+                <div class="info-box">
+                    <strong>Dependencies:</strong> This implementation requires <code>pygame</code>, 
+                    <code>numpy</code>, and <code>moviepy</code>. Install via: 
+                    <code>pip install pygame numpy moviepy</code>
+                </div>
+            </section>
+
+        </div>
+
+        <footer>
+            <p>SLAM Visualization Documentation</p>
+            <p style="margin-top: 10px; opacity: 0.8; font-size: 0.9em;">
+                A technical exploration of simultaneous localization and mapping algorithms
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
